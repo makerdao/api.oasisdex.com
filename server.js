@@ -1,8 +1,11 @@
 var BigNumber = require("bignumber.js")
 var async     = require("async")
 var fetch     = require("node-fetch")
-var moment    = require("moment")
 var http      = require("http")
+var moment    = require("moment")
+var redis     = require("redis")
+
+var CACHE_SECONDS = Number(process.env.CACHE_SECONDS) || 60
 
 function parseMarketData(data) {
   function getBlockMoment(blockNumber) {
@@ -200,10 +203,36 @@ function getPrices() {
   })
 }
 
+if (process.env.REDIS_URL) {
+  var redisClient = redis.createClient(process.env.REDIS_URL)
+}
+
+function getPrice() {
+  return getPrices().then(prices => prices[0].quote)
+}
+
 http.createServer((req, res) => {
   if (req.url == "/") {
-    getPrices().then(prices => {
-      res.end(prices[0].quote)
+    (redisClient ? new Promise((resolve, reject) => {
+      redisClient.get("price", (error, price) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(price || getPrice().then(price => {
+            return new Promise((resolve, reject) => {
+              redisClient.setex("price", CACHE_SECONDS, price, error => {
+                if (error) {
+                  reject(error)
+                } else {
+                  resolve(price)
+                }
+              })
+            })
+          }))
+        }
+      })
+    }) : getPrice()).then(price => {
+      res.end(price)
     }, error => {
       res.writeHead(500)
       res.end(error.message)
