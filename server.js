@@ -216,7 +216,7 @@ function getPrice() {
 }
 
 http.createServer((req, res) => {
-  if (req.url == "/") {
+  if (req.url == "/" || req.url == "/json") {
     (redisClient ? new Promise((resolve, reject) => {
       redisClient.get("price", (error, price) => {
         if (error) {
@@ -236,7 +236,12 @@ http.createServer((req, res) => {
         }
       })
     }) : getPrice()).then(price => {
-      res.end(price)
+      if (req.url == "/json") {
+        res.writeHead(200, { "Content-Type": "application/json" })
+        res.end(JSON.stringify({ "MKR/ETH": price }))
+      } else {
+        res.end(price)
+      }
     }, error => {
       res.writeHead(500)
       res.end(error.message)
