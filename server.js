@@ -26,7 +26,10 @@ function parseMarketData(data) {
       logObject,
       ...logObject.topics.slice(1),
       ...logObject.data.slice(2).match(/.{64}/g),
-    ]).map(([logObject, buyToken, sellToken, buyAmount, sellAmount]) => {
+    ]).filter(([logObject, buyToken, sellToken, buyAmount, sellAmount]) => {
+      return tokens[`0x${buyToken.slice(26)}`]
+        && tokens[`0x${sellToken.slice(26)}`]
+    }).map(([logObject, buyToken, sellToken, buyAmount, sellAmount]) => {
       buyToken   = tokens[`0x${buyToken.slice(26)}`]
       sellToken  = tokens[`0x${sellToken.slice(26)}`]
       buyAmount  = parseMoney(buyAmount, buyToken.decimals)
