@@ -50,13 +50,13 @@ function parseMarketData(data) {
       }, {
         blockNumber   : logObject.blockNumber,
       })
-    }).filter(({ baseToken, counterToken }) => {
-      return `${baseToken.name}/${counterToken.name}` == "MKR/ETH"
-    }).map(({ blockNumber, baseAmount, counterAmount }) => {
+    }).map(({
+      baseToken, counterToken, blockNumber, baseAmount, counterAmount
+    }) => {
       return {
-        pair: "MKR/ETH",
+        pair: `${baseToken.name}${counterToken.name}`,
         time: getBlockMoment(blockNumber).utc().format(),
-        quote: counterAmount.dividedBy(baseAmount).toFormat(2),
+        quote: counterAmount.dividedBy(baseAmount).toFixed(4),
       }
     })
   }
@@ -149,13 +149,18 @@ function fetchMarketData(txhash) {
 }
 
 var tokens = {
+  "0xecf8f87f810ecf450940c9f60066b4a7a501d6a7": {
+    name: "ETH",
+    decimals: 18,
+  },
+
   "0xc66ea802717bfb9833400264dd12c2bceaa34a6d": {
     name: "MKR",
     decimals: 18,
   },
 
-  "0xecf8f87f810ecf450940c9f60066b4a7a501d6a7": {
-    name: "ETH",
+  "0x01afc37f4f85babc47c0e2d0eababc7fb49793c8": {
+    name: "GNT",
     decimals: 18,
   },
 }
@@ -211,37 +216,42 @@ if (process.env.REDIS_URL) {
   var redisClient = redis.createClient(process.env.REDIS_URL)
 }
 
-function getPrice() {
-  return getPrices().then(prices => prices[0].quote)
+function getData() {
+  return getPrices().then(prices => {
+    var getQuote = pair => {
+      return (prices.filter(x => x.pair == pair)[0] || {}).quote || "-"
+    }
+
+    return JSON.stringify({
+      MKRETH: getQuote("MKRETH"),
+      GNTETH: getQuote("GNTETH"),
+    })
+  })
 }
 
 http.createServer((req, res) => {
   if (req.url == "/" || req.url == "/json") {
     (redisClient ? new Promise((resolve, reject) => {
-      redisClient.get("price", (error, price) => {
+      redisClient.get("data", (error, data) => {
         if (error) {
           reject(error)
         } else {
-          resolve(price || getPrice().then(price => {
+          resolve(data || getData().then(data => {
             return new Promise((resolve, reject) => {
-              redisClient.setex("price", CACHE_SECONDS, price, error => {
+              redisClient.setex("data", CACHE_SECONDS, data, error => {
                 if (error) {
                   reject(error)
                 } else {
-                  resolve(price)
+                  resolve(data)
                 }
               })
             })
           }))
         }
       })
-    }) : getPrice()).then(price => {
-      if (req.url == "/json") {
-        res.writeHead(200, { "Content-Type": "application/json" })
-        res.end(JSON.stringify({ "MKR/ETH": price }))
-      } else {
-        res.end(price)
-      }
+    }) : getData()).then(data => {
+      res.writeHead(200, { "Content-Type": "application/json" })
+      res.end(data)
     }, error => {
       res.writeHead(500)
       res.end(error.message)
