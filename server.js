@@ -56,7 +56,7 @@ function parseMarketData(data) {
       return {
         pair: `${baseToken.name}${counterToken.name}`,
         time: getBlockMoment(blockNumber).utc().format(),
-        quote: counterAmount.dividedBy(baseAmount).toFixed(4),
+        quote: counterAmount.dividedBy(baseAmount).toFixed(5),
       }
     })
   }
@@ -223,8 +223,8 @@ function getData() {
     }
 
     return JSON.stringify({
-      MKRETH: getQuote("MKRETH"),
-      GNTETH: getQuote("GNTETH"),
+      "MKRETH": getQuote("MKRETH"),
+      "GNTETH": getQuote("GNTETH"),
     })
   })
 }
