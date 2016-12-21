@@ -46,7 +46,13 @@ http.createServer((req, res) => {
   if (req.url == "/markets") {
     async.map(config.marketTransactions, (txhash, callback) => {
       etherscan.rpc("eth_getTransactionByHash", { txhash }).then(tx => {
-        callback(null, tx.creates)
+        etherscan.rpc("eth_getBlockByNumber", {
+          tag: tx.blockNumber, boolean: "true",
+        }).then(block => {
+          callback(null, [new Date(
+            Number(block.timestamp) * 1000
+          ).toISOString(), tx.creates])
+        }, callback)
       }, callback)
     }, (error, xs) => {
       if (error) {
@@ -54,7 +60,10 @@ http.createServer((req, res) => {
         res.end(error)
       } else {
         res.writeHead(200, { "Content-Type": "application/json" })
-        res.end(`${JSON.stringify(xs, null, 2)}\n`)
+        res.end(`${JSON.stringify(xs.reduce((result, x) => {
+          result[x[0]] = x[1]
+          return result
+        }, {}), null, 2)}\n`)
       }
     })
   } else {
