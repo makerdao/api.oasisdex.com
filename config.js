@@ -15,7 +15,7 @@ exports.marketTransactions = [
   "0xc2b0a71c73fdd57f73c3696aa5487fac233fa26861cea9337f3a95233ca35f10",
   "0x02e60851c0fddf4d706eb06039b40ccea1daa73a05566893a1e5f9c4a3397cdb",
   "0x5a35c21f35ef4badce42b0d94fe5a9842b2826e6a355f4dc21ade210d58c3d42",
-].slice(0, 1)
+]
 
 exports.tokens = {
   "0xecf8f87f810ecf450940c9f60066b4a7a501d6a7": {
