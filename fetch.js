@@ -34,7 +34,7 @@ module.exports = txhash => {
         return etherscan({
           module    : "logs",
           action    : "getLogs",
-          fromBlock : Number(openingBlockNumber),
+          fromBlock : Math.max(2980470, Number(openingBlockNumber)),
           toBlock   : "latest",
           address   : marketAddress,
         }).then(marketLogs => {
