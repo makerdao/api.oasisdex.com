@@ -32,6 +32,11 @@ exports.tokens = {
     name: "GNT",
     decimals: 18,
   },
+
+  "0xe0b7927c4af23765cb51314a0e0521a9645f0e2a": {
+    name: "DGD",
+    decimals: 9,
+  }
 }
 
 exports.sighashes = {
