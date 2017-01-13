@@ -36,9 +36,9 @@ function getData() {
     }
 
     return JSON.stringify({
-      "MKRETH": getQuote("MKRETH"),
-      "GNTETH": getQuote("GNTETH"),
-      "DGDETH": getQuote("DGDETH"),
+      "ETH_MKR": { last: getQuote("MKRETH") },
+      "ETH_GNT": { last: getQuote("GNTETH") },
+      "ETH_DGD": { last: getQuote("DGDETH") },
     })
   })
 }
