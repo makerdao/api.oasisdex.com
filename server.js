@@ -35,8 +35,6 @@ function getData() {
       return (prices.filter(x => x.pair == pair)[0] || {}).quote || "-"
     }
 
-    console.log(prices)
-
     return JSON.stringify({
       "MKRETH": getQuote("MKRETH"),
       "GNTETH": getQuote("GNTETH"),
