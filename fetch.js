@@ -14,40 +14,35 @@ module.exports = txhash => {
       tag     : openingBlockNumber,
       boolean : "true",
     }).then(openingBlock => {
-      var openingMoment = moment(Number(openingBlock.timestamp) * 1000)
+      let marketLogs = []
+      let previousBlockNumber = openingBlockNumber
+      return next()
 
-      if (legacyMarket) {
-        return next(openingMoment.clone().add(32, "days"))
-      } else {
-        return etherscan.rpc("eth_call", {
-          to     : marketAddress,
-          data   : `0x${config.sighashes["close_time()"]}`,
-          tag    : openingBlockNumber,
-        }).then(closingTimestamp => {
-          return next(moment(Number(closingTimestamp) * 1000))
-        })
-      }
-
-      function next(closingMoment) {
-        var open = closingMoment > currentMoment
-
+      function next() {
         return etherscan({
           module    : "logs",
           action    : "getLogs",
-          fromBlock : Math.max(2980470, Number(openingBlockNumber)),
+          fromBlock : +previousBlockNumber + 1,
           toBlock   : "latest",
           address   : marketAddress,
-        }).then(marketLogs => {
-          return etherscan.rpc("eth_getBlockByNumber", {
-            tag     : marketLogs[marketLogs.length - 1].blockNumber,
-            boolean : true,
-          }).then(lastActivityBlock => {
-            return {
-              marketLogs,
-              openingBlock,
-              lastActivityBlock,
-            }
-          })
+        }).then(newMarketLogs => {
+          if (newMarketLogs.length == 0) {
+            return etherscan.rpc("eth_getBlockByNumber", {
+              tag     : "0x" + previousBlockNumber.toString(16),
+              boolean : true,
+            }).then(lastActivityBlock => { 
+              return {
+                marketLogs,
+                openingBlock,
+                lastActivityBlock,
+              }
+            })
+          } else {
+            let blockNumber = +newMarketLogs[newMarketLogs.length - 1].blockNumber
+            previousBlockNumber = blockNumber
+            marketLogs = [...marketLogs, ...newMarketLogs]
+            return next()
+          }
         })
       }
     })
