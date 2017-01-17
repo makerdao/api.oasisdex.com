@@ -1,4 +1,5 @@
 exports.marketTransactions = [
+  "0xf8229fa707fed6cbe93c78c12eb140ba8b0a009a7b77d4f735ffb9c5958f918e",
   "0x83fd85858c6073af499d4e8225fc98fe2f2d0f665514354ada228cde87af31ea",
   "0x250a6c0e87ccaf8e2ff278dd1e8f104520da82396cf9e6c005979c57472c4138",
   "0x0066f5fbcaa625dab61f10707e78335fcfca1b5368cfc82668dec73a52ae4e82",
@@ -36,7 +37,7 @@ exports.tokens = {
   "0xe0b7927c4af23765cb51314a0e0521a9645f0e2a": {
     name: "DGD",
     decimals: 9,
-  }
+  },
 }
 
 exports.sighashes = {
