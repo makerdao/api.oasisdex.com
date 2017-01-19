@@ -2,32 +2,6 @@ var config = require("./config.js")
 var etherscan = require("./etherscan.js")
 var moment = require("moment")
 
-function getAllLogs(blockNumber, address) {
-  let allLogs = []
-  let previousBlockNumber = blockNumber
-
-  function next() {
-    return etherscan({
-      module    : "logs",
-      action    : "getLogs",
-      fromBlock : +previousBlockNumber + 1,
-      toBlock   : "latest",
-      address   : address,
-    }).then(logs => {
-      if (logs.length == 0) {
-        return allLogs
-      } else {
-        let blockNumber = +logs[logs.length - 1].blockNumber
-        previousBlockNumber = blockNumber
-        allLogs = [...allLogs, ...logs]
-        return next()
-      }
-    })
-  }
-
-  return next()
-}
-
 module.exports = txhash => {
   var currentMoment = moment(new Date)
   var legacyMarket = /^0x5a35c21f/.test(txhash)
@@ -40,7 +14,7 @@ module.exports = txhash => {
       tag     : openingBlockNumber,
       boolean : "true",
     }).then(openingBlock => {
-      return getAllLogs(openingBlockNumber, marketAddress).then(marketLogs => {
+      return getAllLogs(marketAddress, openingBlockNumber).then(marketLogs => {
         return etherscan.rpc("eth_getBlockByNumber", {
           tag     : marketLogs[marketLogs.length - 1].blockNumber,
           boolean : true,
@@ -53,5 +27,24 @@ module.exports = txhash => {
         })
       })
     })
+  })
+}
+
+function getAllLogs(address, fromBlock=1, result=[]) {
+  return getLogs(address, fromBlock).then(logs => {
+    if (logs.length < 1000) {
+      return result.concat(logs)
+    } else {
+      var partialBlock = Number(logs[logs.length - 1].blockNumber)
+      getLogs(address, fromBlock, partialBlock - 1, result).then(logs => {
+        return getAllLogs(address, partialBlock, result.concat(logs))
+      })
+    }
+  })
+}
+
+function getLogs(address, fromBlock=1, toBlock="latest") {
+  return etherscan({
+    module: "logs", action: "getLogs", address, fromBlock, toBlock,
   })
 }
