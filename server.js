@@ -37,8 +37,9 @@ function getData() {
 
     return JSON.stringify({
       "ETH_MKR": { last: getQuote("MKRETH") },
-      "ETH_GNT": { last: getQuote("GNTETH") },
       "ETH_DGD": { last: getQuote("DGDETH") },
+      "ETH_GNT": { last: getQuote("GNTETH") },
+      "ETH_ICO": { last: getQuote("ICOETH") },
     })
   })
 }
@@ -84,6 +85,7 @@ http.createServer((req, res) => {
       res.writeHead(200, { "Content-Type": "application/json" })
       res.end(`${data}\n`)
     }, error => {
+      console.warn(error.stack)
       res.writeHead(500)
       res.end(error.message)
       process.exit(1)

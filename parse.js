@@ -59,7 +59,7 @@ module.exports = data => {
   }
 }
 
-function parseMoney(hexnum, decimals) {
+function parseMoney(hexnum, decimals=18) {
   return new BigNumber(`0x${hexnum}`).dividedBy(`1e${decimals}`)
 }
 

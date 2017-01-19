@@ -21,22 +21,23 @@ exports.marketTransactions = [
 exports.tokens = {
   "0xecf8f87f810ecf450940c9f60066b4a7a501d6a7": {
     name: "ETH",
-    decimals: 18,
   },
 
   "0xc66ea802717bfb9833400264dd12c2bceaa34a6d": {
     name: "MKR",
-    decimals: 18,
-  },
-
-  "0x01afc37f4f85babc47c0e2d0eababc7fb49793c8": {
-    name: "GNT",
-    decimals: 18,
   },
 
   "0xe0b7927c4af23765cb51314a0e0521a9645f0e2a": {
     name: "DGD",
     decimals: 9,
+  },
+
+  "0x01afc37f4f85babc47c0e2d0eababc7fb49793c8": {
+    name: "GNT",
+  },
+
+  "0x888666ca69e0f178ded6d75b5726cee99a87d698": {
+    name: "ICO",
   },
 }
 
