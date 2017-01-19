@@ -29,9 +29,11 @@ module.exports = data => {
       sellToken  = config.tokens[`0x${sellToken.slice(26)}`]
       buyAmount  = parseMoney(buyAmount, buyToken.decimals)
       sellAmount = parseMoney(sellAmount, sellToken.decimals)
-  
+
       return Object.assign((
-        buyToken.name == "ETH" || buyToken.name < sellToken.name
+        buyToken.name == "ETH" || (
+          sellToken.name != "ETH" && buyToken.name < sellToken.name
+        )
       ) ? {
         baseToken     : sellToken,
         baseAmount    : sellAmount,
