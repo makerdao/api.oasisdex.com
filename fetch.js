@@ -36,7 +36,7 @@ module.exports = txhash => {
             }).then(result => {
               return new Promise((resolve, reject) => {
                 async.times(Number(result), (id, callback) => {
-                  setTimeout(() => etherscan({
+                  etherscan({
                     module: "proxy",
                     action: "eth_call",
                     to: tx.creates,
@@ -44,7 +44,7 @@ module.exports = txhash => {
                     tag: lastActivityBlock.number,
                   }).then(result => {
                     callback(null, [id, ...result.slice(2).match(/.{64}/g)])
-                  }, callback), Math.random() * 10000)
+                  }, callback)
                 }, (error, offers) => (
                   error ? reject(error) : resolve(proceed(offers))
                 ))
