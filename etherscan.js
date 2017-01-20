@@ -5,7 +5,7 @@ var requests = 0
 
 setInterval(() => {
   queue.splice(
-    0, Math.max(0, 4 - requests)
+    0, Math.max(0, 10 - requests)
   ).forEach(({ url, resolve, reject }) => {
     requests++
     fetch(url).then(response => {
