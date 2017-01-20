@@ -87,6 +87,9 @@ http.createServer((req, res) => {
         }, {}), null, 2)}\n`)
       }
     })
+  } else if (req.url == "/supply") {
+    res.writeHead(200, { "Content-Type": "application/json" })
+    res.end(JSON.stringify({ MKR: { totalSupply: 1000000 } }) + "\n")
   } else {
     (redisClient ? new Promise((resolve, reject) => {
       redisClient.get("data", (error, data) => {
