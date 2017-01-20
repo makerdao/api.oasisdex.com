@@ -43,7 +43,7 @@ function getData() {
     var getSum = (xs, f) => xs.reduce((a, x) => a.plus(f(x)), ZERO)
 
     var getLastTrade = pair => getTrades(pair)[0] || {}
-    var getLastPrice = pair => getLastTrade(pair).price || "n/a"
+    var getLastPrice = pair => getLastTrade(pair).price || ZERO
 
     var getOrders = pair => offers.filter(x => x.pair == pair)
     var getSellOrders = pair => getOrders(pair).filter(x => x.type == "sell")
@@ -52,10 +52,10 @@ function getData() {
     var getBestSellOrder = pair => getSellOrders(pair)[0] || {}
     var getBestBuyOrder = pair => getBuyOrders(pair)[0] || {}
 
-    var getAsk = pair => getBestSellOrder(pair).price || "n/a"
-    var getBid = pair => getBestBuyOrder(pair).price || "n/a"
+    var getAsk = pair => getBestSellOrder(pair).price || ZERO
+    var getBid = pair => getBestBuyOrder(pair).price || ZERO
 
-    return JSON.stringify("MKR DGD GNT ICO".split(" ").reduce(
+    return JSON.stringify("MKR DGD GNT ICN".split(" ").reduce(
       (result, symbol) => Object.assign(result, {
         [`ETH_${symbol}`]: {
           last        : getLastPrice(`${symbol}ETH`).toFixed(9),
