@@ -49,7 +49,7 @@ function getData() {
     return JSON.stringify("MKR DGD GNT ICO".split(" ").reduce(
       (result, symbol) => Object.assign(result, {
         [`ETH_${symbol}`]: {
-          last        : getLastPrice(`${symbol}ETH`),
+          last        : getLastPrice(`${symbol}ETH`).toFixed(9),
           baseVolume  : getDailySum(`${symbol}ETH`, x => x.baseAmount).toFixed(Object.keys(config.tokens).filter(x => config.tokens[x].name == symbol)[0].decimals || 18),
           quoteVolume : getDailySum(`${symbol}ETH`, x => x.counterAmount).toFixed(18),
         },

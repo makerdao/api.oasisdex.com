@@ -53,7 +53,7 @@ module.exports = data => {
       return {
         pair  : `${baseToken.name}${counterToken.name}`,
         time  : getBlockMoment(blockNumber),
-        price : counterAmount.dividedBy(baseAmount).toFixed(5),
+        price : counterAmount.dividedBy(baseAmount),
         baseAmount, counterAmount, baseToken, counterToken,
       }
     })
