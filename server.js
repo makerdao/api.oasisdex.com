@@ -22,18 +22,17 @@ function getMarkets() {
   })
 }
 
-function getPrices() {
-  return getMarkets().then(markets => {
-    return [].concat(...markets.map(market => market.prices))
-  })
-}
-
 if (process.env.REDIS_URL) {
   var redisClient = redis.createClient(process.env.REDIS_URL)
 }
 
 function getData() {
-  return getPrices().then(prices => {
+  return getMarkets().then(markets => {
+    return {
+      prices: [].concat(...markets.map(market => market.prices)),
+      offers: markets[0].offers,
+    }
+  }).then(({ prices, offers }) => {
     var getTrades = pair => prices.filter(x => x.pair == pair)
     var getDayTrades = pair => getTrades(pair).filter(
       x => x.time.isAfter(moment().subtract(1, "days"))
@@ -44,7 +43,17 @@ function getData() {
     var getSum = (xs, f) => xs.reduce((a, x) => a.plus(f(x)), ZERO)
 
     var getLastTrade = pair => getTrades(pair)[0] || {}
-    var getLastPrice = pair => getLastTrade(pair).price || "-"
+    var getLastPrice = pair => getLastTrade(pair).price || "n/a"
+
+    var getOrders = pair => offers.filter(x => x.pair == pair)
+    var getSellOrders = pair => getOrders(pair).filter(x => x.type == "sell")
+    var getBuyOrders = pair => getOrders(pair).filter(x => x.type == "buy").reverse()
+
+    var getBestSellOrder = pair => getSellOrders(pair)[0] || {}
+    var getBestBuyOrder = pair => getBuyOrders(pair)[0] || {}
+
+    var getAsk = pair => getBestSellOrder(pair).price || "n/a"
+    var getBid = pair => getBestBuyOrder(pair).price || "n/a"
 
     return JSON.stringify("MKR DGD GNT ICO".split(" ").reduce(
       (result, symbol) => Object.assign(result, {
@@ -52,6 +61,8 @@ function getData() {
           last        : getLastPrice(`${symbol}ETH`).toFixed(9),
           baseVolume  : getDailySum(`${symbol}ETH`, x => x.baseAmount).toFixed(Object.keys(config.tokens).filter(x => config.tokens[x].name == symbol)[0].decimals || 18),
           quoteVolume : getDailySum(`${symbol}ETH`, x => x.counterAmount).toFixed(18),
+          lowestAsk   : getAsk(`${symbol}ETH`).toFixed(9),
+          highestBid  : getBid(`${symbol}ETH`).toFixed(9),
         },
       }
     ), {}), null, 2)

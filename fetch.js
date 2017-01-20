@@ -1,6 +1,7 @@
-var config = require("./config.js")
+var async     = require("async")
+var config    = require("./config.js")
 var etherscan = require("./etherscan.js")
-var moment = require("moment")
+var moment    = require("moment")
 
 module.exports = txhash => {
   var currentMoment = moment(new Date)
@@ -20,11 +21,37 @@ module.exports = txhash => {
         return etherscan.rpc("eth_getBlockByNumber", {
           tag     : marketLogs[marketLogs.length - 1].blockNumber,
           boolean : true,
-        }).then(lastActivityBlock => { 
-          return {
-            marketLogs,
-            openingBlock,
-            lastActivityBlock,
+        }).then(lastActivityBlock => {
+          var proceed = offers => ({
+            marketLogs, offers, openingBlock, lastActivityBlock,
+          })
+        
+          if (txhash == config.marketTransactions[0]) {
+            return etherscan({
+              module: "proxy",
+              action: "eth_call",
+              to: tx.creates,
+              data: `0x${config.sighashes["last_offer_id()"]}`,
+              tag: lastActivityBlock.number,
+            }).then(result => {
+              return new Promise((resolve, reject) => {
+                async.times(Number(result), (id, callback) => {
+                  setTimeout(() => etherscan({
+                    module: "proxy",
+                    action: "eth_call",
+                    to: tx.creates,
+                    data: `0x${config.sighashes["getOffer(uint256)"]}${uint256(id)}`,
+                    tag: lastActivityBlock.number,
+                  }).then(result => {
+                    callback(null, [id, ...result.slice(2).match(/.{64}/g)])
+                  }, callback), Math.random() * 10000)
+                }, (error, offers) => (
+                  error ? reject(error) : resolve(proceed(offers))
+                ))
+              })
+            })
+          } else {
+            return proceed([])
           }
         })
       })
@@ -51,4 +78,16 @@ function getLogs(address, fromBlock=1, toBlock="latest") {
   return etherscan({
     module: "logs", action: "getLogs", address, fromBlock, toBlock,
   })
+}
+
+function uint256(number) {
+  return padLeft("0", 64, Number(number).toString(16))
+}
+
+function padLeft(padding, width, string) {
+  return repeat(padding, Math.max(0, width - string.length)) + string
+}
+
+function repeat(x, n) {
+  return new Array(n + 1).join(x)
 }

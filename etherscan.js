@@ -12,7 +12,7 @@ var etherscan = module.exports = function(params) {
         }
       })
     } else {
-      throw new Error(`HTTP ${response.statusCode}`)
+      throw new Error(`HTTP ${response.status}`)
     }
   }).catch(error => {
     throw new Error(`${url}: ${error.message}`)

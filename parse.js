@@ -13,6 +13,39 @@ module.exports = data => {
   }
 
   return {
+    offers: data.offers.filter(([
+      id, amount, asset, payment, currency
+    ]) => {
+      return Number(`0x${amount}`)
+    }).map(([id, amount, asset, payment, currency]) => {
+      currency = config.tokens[`0x${currency.slice(24)}`]
+      asset    = config.tokens[`0x${asset.slice(24)}`]
+      return [id, amount, asset, payment, currency]
+    }).filter(([id, amount, asset, payment, currency]) => {
+      return asset && currency
+    }).map(([id, amount, asset, payment, currency]) => {
+      payment = parseMoney(payment, currency.decimals)
+      amount  = parseMoney(amount, asset.decimals)
+
+      var type = "sell"
+
+      if (asset.name == "ETH" || (
+        currency.name != "ETH" && asset.name < currency.name
+      )) {
+        [currency, asset, payment, amount, type] = [
+          asset, currency, amount, payment, "buy"
+        ]
+      }
+
+      return {
+        asset, currency, amount, payment, type,
+        pair: `${asset.name}${currency.name}`,
+        price: payment.dividedBy(amount),
+      }
+    }).sort((a, b) => {
+      return a.price.comparedTo(b.price)
+    }),
+
     prices: data.marketLogs.filter(log => {
       return log.topics[0].slice(2, 10) == config.sighashes[
         "Trade(uint256,address,uint256,address)"
