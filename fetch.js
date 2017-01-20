@@ -14,7 +14,9 @@ module.exports = txhash => {
       tag     : openingBlockNumber,
       boolean : "true",
     }).then(openingBlock => {
-      return getAllLogs(marketAddress, openingBlockNumber).then(marketLogs => {
+      return getAllLogs(
+        marketAddress, openingBlockNumber
+      ).then(marketLogs => {
         return etherscan.rpc("eth_getBlockByNumber", {
           tag     : marketLogs[marketLogs.length - 1].blockNumber,
           boolean : true,
@@ -36,7 +38,9 @@ function getAllLogs(address, fromBlock=1, result=[]) {
       return result.concat(logs)
     } else {
       var partialBlock = Number(logs[logs.length - 1].blockNumber)
-      getLogs(address, fromBlock, partialBlock - 1, result).then(logs => {
+      return getLogs(
+        address, fromBlock, partialBlock - 1, result
+      ).then(logs => {
         return getAllLogs(address, partialBlock, result.concat(logs))
       })
     }

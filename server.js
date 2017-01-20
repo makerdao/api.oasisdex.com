@@ -1,6 +1,8 @@
-var async           = require("async")
-var http            = require("http")
-var redis           = require("redis")
+var BigNumber = require("bignumber.js")
+var async     = require("async")
+var http      = require("http")
+var moment    = require("moment")
+var redis     = require("redis")
 
 var config          = require("./config.js")
 var etherscan       = require("./etherscan.js")
@@ -8,10 +10,11 @@ var fetchMarketData = require("./fetch.js")
 var parseMarketData = require("./parse.js")
 
 var CACHE_SECONDS = Number(process.env.CACHE_SECONDS) || 60
+var ZERO          = new BigNumber(0)
 
 function getMarkets() {
   return new Promise((resolve, reject) => {
-    async.map(config.marketTransactions.slice(0, 1), (txhash, $) => {
+    async.map(config.marketTransactions.slice(0, 2), (txhash, $) => {
       fetchMarketData(txhash).then(parseMarketData).then(x => {
         $(null, x)
       }, $)
@@ -31,16 +34,27 @@ if (process.env.REDIS_URL) {
 
 function getData() {
   return getPrices().then(prices => {
-    var getQuote = pair => {
-      return (prices.filter(x => x.pair == pair)[0] || {}).quote || "-"
-    }
+    var getTrades = pair => prices.filter(x => x.pair == pair)
+    var getDayTrades = pair => getTrades(pair).filter(
+      x => x.time.isAfter(moment().subtract(1, "days"))
+    )
 
-    return JSON.stringify({
-      "ETH_MKR": { last: getQuote("MKRETH") },
-      "ETH_DGD": { last: getQuote("DGDETH") },
-      "ETH_GNT": { last: getQuote("GNTETH") },
-      "ETH_ICO": { last: getQuote("ICOETH") },
-    })
+    var getTotalSum = (pair, f) => getSum(getTrades(pair), f)
+    var getDailySum = (pair, f) => getSum(getDayTrades(pair), f)
+    var getSum = (xs, f) => xs.reduce((a, x) => a.plus(f(x)), ZERO)
+
+    var getLastTrade = pair => getTrades(pair)[0] || {}
+    var getLastPrice = pair => getLastTrade(pair).price || "-"
+
+    return JSON.stringify("MKR DGD GNT ICO".split(" ").reduce(
+      (result, symbol) => Object.assign(result, {
+        [`ETH_${symbol}`]: {
+          last        : getLastPrice(`${symbol}ETH`),
+          baseVolume  : getDailySum(`${symbol}ETH`, x => x.baseAmount),
+          quoteVolume : getDailySum(`${symbol}ETH`, x => x.counterAmount),
+        },
+      }
+    ), {}), null, 2)
   })
 }
 
