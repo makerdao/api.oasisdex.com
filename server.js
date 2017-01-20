@@ -50,8 +50,8 @@ function getData() {
       (result, symbol) => Object.assign(result, {
         [`ETH_${symbol}`]: {
           last        : getLastPrice(`${symbol}ETH`),
-          baseVolume  : getDailySum(`${symbol}ETH`, x => x.baseAmount),
-          quoteVolume : getDailySum(`${symbol}ETH`, x => x.counterAmount),
+          baseVolume  : getDailySum(`${symbol}ETH`, x => x.baseAmount).toFixed(Object.keys(config.tokens).filter(x => config.tokens[x].name == symbol)[0].decimals || 18),
+          quoteVolume : getDailySum(`${symbol}ETH`, x => x.counterAmount).toFixed(18),
         },
       }
     ), {}), null, 2)
