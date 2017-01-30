@@ -9,7 +9,7 @@ var etherscan       = require("./etherscan.js")
 var fetchMarketData = require("./fetch.js")
 var parseMarketData = require("./parse.js")
 
-var CACHE_SECONDS = Number(process.env.CACHE_SECONDS) || 60
+var CACHE_SECONDS = Number(process.env.CACHE_SECONDS) || 300
 var ZERO          = new BigNumber(0)
 
 function getMarkets() {
