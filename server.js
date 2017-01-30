@@ -71,8 +71,11 @@ function getData() {
 
 http.createServer((req, res) => {
   if (req.headers.host == "mkrprice.herokuapp.com") {
-    res.writeHead(301, { Location: "https://api.mkr.market" })
-    res.end("Moved to https://api.mkr.market\n")
+    res.writeHead(404)
+    res.end(
+      "This URL has been taken down.\n" +
+      "Please refer to <https://chat.makerdao.com/>.\n"
+    )
   } else if (req.url == "/markets") {
     async.map(config.marketTransactions, (txhash, callback) => {
       etherscan.rpc("eth_getTransactionByHash", { txhash }).then(tx => {
