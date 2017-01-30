@@ -117,7 +117,9 @@ http.createServer((req, res) => {
       })
     }) : getData()).then(data => {
       res.writeHead(200, { "Content-Type": "application/json" })
-      res.end(`${data}\n`)
+      res.end(`${JSON.stringify(Object.assign({
+        notice: ["This app may be intermittently unavailable.", "If you see an error message, try refreshing the page.", "Sorry for the inconvenience."],
+      }, JSON.parse(data)), null, 2)}\n`)
     }, error => {
       console.warn(error.stack)
       res.writeHead(500)
