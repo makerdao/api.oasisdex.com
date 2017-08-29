@@ -14,7 +14,7 @@ var ZERO          = new BigNumber(0)
 
 function getMarkets() {
   return new Promise((resolve, reject) => {
-    async.map(config.marketTransactions.slice(0, 2), (txhash, $) => {
+    async.map(config.marketTransactions.slice(0, 1), (txhash, $) => {
       fetchMarketData(txhash).then(parseMarketData).then(x => {
         $(null, x)
       }, $)
